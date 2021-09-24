@@ -4,11 +4,11 @@ from matplotlib import pyplot as plt
 import time
 
 cap = cv2.VideoCapture(0)
-
 idx = 0
+orb = cv2.ORB_create()
 
-while True:
-    ret, frame = cap.read()  # 1 frame acquise à chaque iteration
+
+def hough(frame):
 
     edges = cv2.Canny(frame, 100, 200)
 
@@ -19,6 +19,37 @@ while True:
             res = cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
         cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
+    return frame
+
+
+def region_interet(frame):
+    kp = orb.detect(frame, None)
+    res = cv2.drawKeypoints(frame, kp, None, color=(0, 255, 0), flags=0)
+    return res
+
+
+def transforee_affine(frame):
+    s = 0.5
+    teta = np.pi
+    alpha = s*np.cos(teta)
+    beta = s*np.sin(teta)
+    cx = frame.shape[0]//2
+    cy = frame.shape[1]//2
+    tx = 10
+    ty = 15
+    M = np.float32([[alpha, beta,  (1-alpha)*cx-beta*cy+tx],
+                    [-beta, alpha, beta*cx+(1-alpha)*cy+ty]])
+
+    row = frame.shape[0]
+    col = frame.shape[1]
+    res = cv2.warpAffine(frame, M, (col, row))
+    return res
+
+
+while True:
+    ret, frame = cap.read()  # 1 frame acquise à chaque iteration
+
+    frame = transforee_affine_translation(frame)
 
     cv2.imshow('Capture_Video', frame)  # affichage
     key = cv2.waitKey(1)  # on évalue la touche pressée
