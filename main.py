@@ -46,10 +46,30 @@ def transforee_affine(frame):
     return res
 
 
+def transformee_non_lineaire(frame):
+    x = np.arange(frame.shape[1], dtype=int)
+    y = np.arange(frame.shape[0], dtype=int)
+    xv, xy = np.meshgrid(x, y)
+    A = 30
+    xvtil = xv - frame.shape[1]/2
+    xytil = xy - frame.shape[0]/2
+    tetax = 100000
+    tetay = 100000
+    alpha = xvtil + xytil
+    dx = A * np.cos(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xytil ** 2 / tetay)))
+    dy = A * np.sin(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xytil ** 2 / tetay)))
+    #dx = xv*np.cos(xv)
+    #dy = xy*np.cos(xy)
+    mapx = xv + dx
+    mapy = xy + dy
+    res = cv2.remap(frame, np.float32(mapx), np.float32(mapy), cv2.INTER_NEAREST)
+    return res
+
+
 while True:
     ret, frame = cap.read()  # 1 frame acquise à chaque iteration
 
-    frame = transforee_affine_translation(frame)
+    frame = transformee_non_lineaire(frame)
 
     cv2.imshow('Capture_Video', frame)  # affichage
     key = cv2.waitKey(1)  # on évalue la touche pressée
