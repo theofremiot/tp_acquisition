@@ -10,21 +10,19 @@ orb = cv2.ORB_create()
 
 def hough(frame):
 
-    edges = cv2.Canny(frame, 100, 200)
+    edges = cv2.Canny(frame, 50, 250)
 
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 50, 100, 10)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 50, 100, 50)
     if lines is not None:
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            res = cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-        cv2.line(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
-    return frame
+            res = cv2.line(frame.copy(), (x1, y1), (x2, y2), (0, 255, 0), 2)
+    return res
 
 
 def region_interet(frame):
     kp = orb.detect(frame, None)
-    res = cv2.drawKeypoints(frame, kp, None, color=(0, 255, 0), flags=0)
+    res = cv2.drawKeypoints(frame.copy(), kp, None, color=(0, 255, 0), flags=0)
     return res
 
 
@@ -53,13 +51,14 @@ def transformee_non_lineaire(frame):
     A = 30
     xvtil = xv - frame.shape[1]/2
     xytil = xy - frame.shape[0]/2
-    tetax = 100000
-    tetay = 100000
-    alpha = xvtil + xytil
-    dx = A * np.cos(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xytil ** 2 / tetay)))
+    tetax = 50
+    tetay = 80
+    teta = 10
+    alpha = xvtil + 1j * xytil
+    dx = A * np.cos(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xvtil ** 2 / tetay)))
     dy = A * np.sin(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xytil ** 2 / tetay)))
-    #dx = xv*np.cos(xv)
-    #dy = xy*np.cos(xy)
+    # dx = A * np.cos(alpha) * np.exp(-((xytil ** 2 + xvtil ** 2 - teta ** 2) / (tetax * np.sqrt(xvtil ** 2 + xytil ** 2))) ** 2)
+    # dy = A * np.sin(alpha) * np.exp(-((xytil ** 2 + xvtil ** 2 - teta ** 2) / (tetay * np.sqrt(xvtil ** 2 + xytil ** 2))) ** 2)
     mapx = xv + dx
     mapy = xy + dy
     res = cv2.remap(frame, np.float32(mapx), np.float32(mapy), cv2.INTER_NEAREST)
@@ -69,9 +68,9 @@ def transformee_non_lineaire(frame):
 while True:
     ret, frame = cap.read()  # 1 frame acquise à chaque iteration
 
-    frame = transformee_non_lineaire(frame)
+    frame = hough(frame)
 
-    cv2.imshow('Capture_Video', frame)  # affichage
+    cv2.imshow('Capture Video', frame)  # affichage
     key = cv2.waitKey(1)  # on évalue la touche pressée
 
     if key & 0xFF == ord('q'):  # si appui sur 'q'
