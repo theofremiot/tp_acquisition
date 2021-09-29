@@ -54,21 +54,27 @@ def transformee_non_lineaire(frame):
     tetax = 50
     tetay = 80
     teta = 10
-    alpha = xvtil + 1j * xytil
-    dx = A * np.cos(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xvtil ** 2 / tetay)))
-    dy = A * np.sin(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xytil ** 2 / tetay)))
-    # dx = A * np.cos(alpha) * np.exp(-((xytil ** 2 + xvtil ** 2 - teta ** 2) / (tetax * np.sqrt(xvtil ** 2 + xytil ** 2))) ** 2)
-    # dy = A * np.sin(alpha) * np.exp(-((xytil ** 2 + xvtil ** 2 - teta ** 2) / (tetay * np.sqrt(xvtil ** 2 + xytil ** 2))) ** 2)
+    alpha = np.angle(xvtil + 1j * xytil)
+    #dx = A * np.cos(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xvtil ** 2 / tetay)))
+    #dy = A * np.sin(alpha) * np.exp(-((xvtil ** 2 / tetax) + (xytil ** 2 / tetay)))
+    dx = A * np.cos(alpha) * np.exp(-((xytil ** 2 + xvtil ** 2 - teta ** 2) / (tetax * np.sqrt(xvtil ** 2 + xytil ** 2))) ** 2)
+    dy = A * np.sin(alpha) * np.exp(-((xytil ** 2 + xvtil ** 2 - teta ** 2) / (tetay * np.sqrt(xvtil ** 2 + xytil ** 2))) ** 2)
     mapx = xv + dx
     mapy = xy + dy
     res = cv2.remap(frame, np.float32(mapx), np.float32(mapy), cv2.INTER_NEAREST)
     return res
 
 
+def face_detection(frame):
+
+    res = cv2.rectangle(frame.copy(), p1, p2, (0, 255, 0))
+    return res
+
+
 while True:
     ret, frame = cap.read()  # 1 frame acquise à chaque iteration
 
-    frame = hough(frame)
+    frame = transformee_non_lineaire(frame)
 
     cv2.imshow('Capture Video', frame)  # affichage
     key = cv2.waitKey(1)  # on évalue la touche pressée
