@@ -65,16 +65,8 @@ def transformee_non_lineaire(frame):
     return res
 
 
-def face_detection(frame):
-
-    res = cv2.rectangle(frame.copy(), p1, p2, (0, 255, 0))
-    return res
-
-
 while True:
     ret, frame = cap.read()  # 1 frame acquise à chaque iteration
-
-    frame = transformee_non_lineaire(frame)
 
     cv2.imshow('Capture Video', frame)  # affichage
     key = cv2.waitKey(1)  # on évalue la touche pressée
